@@ -1,0 +1,90 @@
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
+
+<div id="contentTypesContainer" class="mx-3">
+  <!-- User editable region -->
+  <section>
+    <!-- Define your content here -->
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <div class="table-responsive">
+            <table class="table usr_TableDefault">
+              <caption class="usr_CaptionHide">
+                Comments
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Comments received</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in items">
+                  <td>{{formatDate(item.dateAndTime)}}</td>
+                  <td>{{item.myComment}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- End of user editable region -->
+</div>
+
+<script>
+  var app = new Vue({
+    el: "#contentTypesContainer",
+    data() {
+      // Content Type Settings
+      let contentType = "testComment";
+      return {
+        accessToken: "QCpZfwnsgnQsyHHB3ID5isS43cZnthj6YoSPtemxFGtcH15I", // API access token, replace if expired
+        linkDepth: 5, // leave at 5 if unsure.
+        url: `https://cms-chesheast.cloud.contensis.com/api/delivery/projects/Website/contentTypes/${contentType}/entries/`,
+        items: [],
+        loading: true,
+        errored: false,
+      };
+    },
+    methods: {
+      formatDate: function (date) {
+        return new Date(date).toLocaleDateString();
+      },
+      sortObjDate: function () {
+        return (a, b) => {
+          let x = new Date(a.myDate);
+          let y = new Date(b.myDate);
+          if (x < y) {
+            return -1;
+          }
+          if (x > y) {
+            return 1;
+          }
+          return 0;
+        };
+      },
+      getBaseUrl: function () {
+        return `${this.url}?accessToken=${this.accessToken}&linkDepth=${this.linkDepth}&pageSize=10`;
+      },
+      callAxios: function (url, ind) {
+        axios
+          .get(url)
+          .then((response) => {
+            this.items = response.data.items;
+            this.items.sort(this.sortObjDate());
+            this.loading = false;
+          })
+          .catch((error) => {
+            console.log(error);
+            this.errored = true;
+          })
+          .finally(() => (this.loading = false));
+      },
+    },
+    mounted() {
+      this.callAxios(this.getBaseUrl(), 0);
+    },
+  });
+</script>

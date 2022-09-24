@@ -1,0 +1,44 @@
+<script>
+  const myComment = document.getElementById("comment");
+  const myDisplay = document.getElementById("display");
+  const myBtn = document.getElementById("myBtn");
+
+  myBtn.addEventListener("click", sendComment);
+  myComment.addEventListener("focus", clear);
+
+  function clear() {
+    myDisplay.innerHTML = "&nbsp;";
+  }
+
+  function sendComment() {
+    let msg = myComment.value;
+    if (!msg) {
+      return;
+    }
+    myComment.value = "";
+    myBtn.disabled = true;
+    myDisplay.innerText = "Contacting the server.";
+    let myDate = new Date().toLocaleString();
+    fetch(
+      "https://cors-pnbi.onrender.com/https://managementapi.onrender.com/comment",
+      {
+        method: "post",
+        body: JSON.stringify({ comment: msg, date: myDate }),
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+        },
+      }
+    )
+      .then((response) => {
+        if (response.status === 200) {
+          console.log("Success.");
+          myDisplay.innerText = `We received your comment:\n"${msg}"`;
+        } else {
+          myDisplay.innerText = "Something went wrong.";
+          throw Error("Server rejected comment.");
+        }
+      })
+      .catch((err) => console.log(err));
+    myBtn.disabled = false;
+  }
+</script>
